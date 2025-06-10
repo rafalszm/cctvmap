@@ -1,0 +1,25 @@
+[
+  {
+    "id": "cam001",
+    "ip": "192.168.1.10",
+    "username": "user",
+    "password": "pass",
+    "manufacturer": "Hikvision",
+    "lat": 52.1234,
+    "lng": 20.4321,
+    "direction": 90,
+    "type": "ptz",
+    "mac": "00:11:22:33:44:55"
+  },
+  {
+    "id": "cam002",
+    "ip": "192.168.1.11",
+    "username": "user",
+    "password": "pass",
+    "manufacturer": "Dahua",
+    "lat": 52.1238,
+    "lng": 20.4325,
+    "direction": 180,
+    "type": "bullet"
+  }
+]
