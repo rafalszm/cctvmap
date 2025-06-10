@@ -5,7 +5,7 @@ This repository contains a minimal example of a CCTV map running locally with PH
 ## Files
 
 - `cameras.json` – sample camera definitions
-- `camera_utils.php` – helper functions for generating snapshot and panel URLs with authentication handled per vendor
+- `camera_utils.php` – helper functions for generating snapshot and panel URLs and a small slug helper
 - `snapshot.php` – server-side proxy that fetches snapshots to avoid browser cross-origin issues
 - `auth.php` – list of allowed users
 - `login.php` / `logout.php` – simple authentication
@@ -15,7 +15,7 @@ This repository contains a minimal example of a CCTV map running locally with PH
 
 Each camera entry may contain the following fields:
 
-- `id` – unique identifier
+- `name` – human readable name of the device
 - `ip` – address of the device
 - `username` / `password` – credentials for the camera
 - `manufacturer` – camera vendor (Hikvision, Dahua, BCS)
@@ -24,15 +24,14 @@ Each camera entry may contain the following fields:
 - `type` – camera type (ptz, bullet, etc.)
 - `mac` – optional MAC address
 
-Snapshot and panel URLs are derived at runtime using the helper functions.
+The camera ID used internally is derived from `name` by creating a simple slug (lowercase alphanumeric with dashes). Snapshot and panel URLs are built at runtime using the helper functions.
 
-Snapshots are fetched server-side. The helper functions build the vendor-specific
-URL including percent-encoded credentials, and `snapshot.php` retrieves the image
-and serves it to the browser. Examples of the underlying camera endpoints:
+Snapshots are fetched server-side. The helper functions build the vendor-specific URL, and `snapshot.php` retrieves the image using HTTP authentication before serving it to the browser. Examples of the underlying camera endpoints:
 
-- Hikvision: `http://user:pass@IP/ISAPI/Streaming/Channels/101/picture`
-- Dahua: `http://user:pass@IP/cgi-bin/snapshot.cgi?channel=1`
-- BCS (Hikvision compatible): `http://user:pass@IP/ISAPI/Streaming/channels/1/picture`
+- Hikvision: `http://IP/ISAPI/Streaming/Channels/101/picture`
+- Dahua: `http://IP/cgi-bin/snapshot.cgi?channel=1`
+- BCS (Hikvision compatible): `http://IP/ISAPI/Streaming/channels/1/picture`
+
 ## Running
 
 1. Install PHP (only the CLI is required). On Debian/Ubuntu:

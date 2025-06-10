@@ -7,6 +7,7 @@ if (!isset($_SESSION['user'])) {
 require_once 'camera_utils.php';
 $cams = json_decode(file_get_contents('cameras.json'), true) ?? [];
 foreach ($cams as &$cam) {
+    $cam['id'] = slugify($cam['name']);
     $cam['snapshot'] = 'snapshot.php?id=' . rawurlencode($cam['id']);
     $cam['panel'] = panel_url($cam);
 }
@@ -55,17 +56,22 @@ document.addEventListener('DOMContentLoaded',()=>{
 const map=L.map('map').setView([cameras[0]?.lat||0,cameras[0]?.lng||0],13);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'Map data © OpenStreetMap contributors'}).addTo(map);
 function popupHtml(cam){
-  return `<div><strong>${cam.id}</strong><br>
-    <img id="snap_${cam.id}" data-src="${cam.snapshot}" src="${cam.snapshot}" width="200" class="img-fluid mb-1">
-    <button class="btn btn-sm btn-outline-secondary refresh" data-id="${cam.id}"><i class="fa-solid fa-arrows-rotate"></i></button><br>
-    IP: <span id="ip_${cam.id}" class="data-text">${cam.ip}</span>
-    <button class="btn btn-sm btn-link copy-btn p-0" data-target="ip_${cam.id}"><i class="fa-solid fa-copy"></i></button><br>
-    User: <span id="user_${cam.id}" class="data-text">${cam.username}</span>
-    <button class="btn btn-sm btn-link copy-btn p-0" data-target="user_${cam.id}"><i class="fa-solid fa-copy"></i></button><br>
-    Pass: <span id="pass_${cam.id}" class="data-text" data-value="${cam.password}">••••</span>
-    <button class="btn btn-sm btn-link copy-btn p-0" data-target="pass_${cam.id}"><i class="fa-solid fa-copy"></i></button>
-    <button class="btn btn-sm btn-link show-btn p-0" data-target="pass_${cam.id}"><i class="fa-solid fa-eye"></i></button><br>
-    <a href="${cam.panel}" target="_blank">Panel</a></div>`;
+  return `<div style="max-width:550px;">
+    <h6 class="mb-2">${cam.name}</h6>
+    <img id="snap_${cam.id}" data-src="${cam.snapshot}" src="${cam.snapshot}" class="img-fluid mb-2">
+    <button class="btn btn-sm btn-outline-secondary refresh mb-2" data-id="${cam.id}"><i class="fa-solid fa-arrows-rotate"></i></button>
+    <div class="mb-1">IP: <span id="ip_${cam.id}" class="me-1">${cam.ip}</span>
+      <button class="btn btn-sm btn-link copy-btn p-0" data-target="ip_${cam.id}"><i class="fa-solid fa-copy"></i></button>
+    </div>
+    <div class="mb-1">User: <span id="user_${cam.id}" class="me-1">${cam.username}</span>
+      <button class="btn btn-sm btn-link copy-btn p-0" data-target="user_${cam.id}"><i class="fa-solid fa-copy"></i></button>
+    </div>
+    <div class="mb-1">Pass: <span id="pass_${cam.id}" data-value="${cam.password}" class="me-1">••••</span>
+      <button class="btn btn-sm btn-link copy-btn p-0" data-target="pass_${cam.id}"><i class="fa-solid fa-copy"></i></button>
+      <button class="btn btn-sm btn-link show-btn p-0" data-target="pass_${cam.id}"><i class="fa-solid fa-eye"></i></button>
+    </div>
+    <a href="${cam.panel}" target="_blank" class="btn btn-sm btn-primary">Panel</a>
+  </div>`;
 }
 function addEvents(container){
   container.querySelectorAll('.copy-btn').forEach(btn=>{
