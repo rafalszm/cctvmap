@@ -5,7 +5,7 @@ This repository contains a minimal example of a CCTV map running locally with PH
 ## Files
 
 - `cameras.json` – sample camera definitions
-- `camera_utils.php` – helper functions for generating snapshot and panel URLs
+- `camera_utils.php` – helper functions for generating snapshot and panel URLs with authentication handled per vendor
 - `auth.php` – list of allowed users
 - `login.php` / `logout.php` – simple authentication
 - `index.php` – the map view shown after logging in
@@ -25,6 +25,7 @@ Each camera entry may contain the following fields:
 
 Snapshot and panel URLs are derived at runtime using the helper functions.
 
+Snapshot URLs are built automatically based on the manufacturer and include the credentials so the map can display images.
 ## Running
 
 1. Install PHP (only the CLI is required). On Debian/Ubuntu:
