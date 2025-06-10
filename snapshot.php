@@ -20,6 +20,10 @@ if (!$url) {
     http_response_code(500);
     exit('Unsupported camera');
 }
+if (!function_exists('curl_init')) {
+    http_response_code(500);
+    exit('Missing cURL extension');
+}
 $ch = curl_init($url);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);

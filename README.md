@@ -36,7 +36,7 @@ Snapshots are fetched server-side. The helper functions build the vendor-specifi
 
 1. Install PHP (only the CLI is required). On Debian/Ubuntu:
    ```sh
-   sudo apt-get install php-cli
+   sudo apt-get install php-cli php-curl
    ```
 2. Start the built-in PHP server from the repository root:
    ```sh
