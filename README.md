@@ -6,6 +6,7 @@ This repository contains a minimal example of a CCTV map running locally with PH
 
 - `cameras.json` – sample camera definitions
 - `camera_utils.php` – helper functions for generating snapshot and panel URLs with authentication handled per vendor
+- `snapshot.php` – server-side proxy that fetches snapshots to avoid browser cross-origin issues
 - `auth.php` – list of allowed users
 - `login.php` / `logout.php` – simple authentication
 - `index.php` – the map view shown after logging in
@@ -25,9 +26,9 @@ Each camera entry may contain the following fields:
 
 Snapshot and panel URLs are derived at runtime using the helper functions.
 
-Snapshot URLs are built automatically based on the camera vendor and embed
-credentials in the URL (username and password are percent‑encoded to handle
-special characters). For example:
+Snapshots are fetched server-side. The helper functions build the vendor-specific
+URL including percent-encoded credentials, and `snapshot.php` retrieves the image
+and serves it to the browser. Examples of the underlying camera endpoints:
 
 - Hikvision: `http://user:pass@IP/ISAPI/Streaming/Channels/101/picture`
 - Dahua: `http://user:pass@IP/cgi-bin/snapshot.cgi?channel=1`
@@ -48,6 +49,7 @@ special characters). For example:
 
 - Leaflet map showing cameras from `cameras.json`
 - Manual refresh of snapshots in the camera popups
+- Snapshots are served through `snapshot.php` to prevent browser cross-origin errors
 - Copy-to-clipboard buttons for IP, username and password (password can be shown/hidden)
 - Bootstrap theme toggle with the selected option stored in a cookie
 

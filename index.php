@@ -7,7 +7,7 @@ if (!isset($_SESSION['user'])) {
 require_once 'camera_utils.php';
 $cams = json_decode(file_get_contents('cameras.json'), true) ?? [];
 foreach ($cams as &$cam) {
-    $cam['snapshot'] = snapshot_url($cam);
+    $cam['snapshot'] = 'snapshot.php?id=' . rawurlencode($cam['id']);
     $cam['panel'] = panel_url($cam);
 }
 ?>
