@@ -25,7 +25,11 @@ Each camera entry may contain the following fields:
 
 Snapshot and panel URLs are derived at runtime using the helper functions.
 
-Snapshot URLs are built automatically based on the manufacturer and include the credentials so the map can display images.
+Snapshot URLs are built automatically based on the camera vendor and embed credentials in the URL. For example:
+
+- Hikvision: `http://user:pass@IP/ISAPI/Streaming/Channels/101/picture`
+- Dahua: `http://user:pass@IP/cgi-bin/snapshot.cgi?channel=1`
+- BCS (Hikvision compatible): `http://user:pass@IP/ISAPI/Streaming/channels/1/picture`
 ## Running
 
 1. Install PHP (only the CLI is required). On Debian/Ubuntu:

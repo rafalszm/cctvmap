@@ -9,8 +9,8 @@ function snapshot_url(array $cam): ?string {
             // Hikvision uses the ISAPI endpoint with HTTP basic auth
             return "http://{$user}:{$pass}@{$ip}/ISAPI/Streaming/channels/101/picture?snapshot=now";
         case 'dahua':
-            // Dahua allows credentials via query parameters
-            return "http://{$ip}/cgi-bin/snapshot.cgi?channel=1&user={$user}&password={$pass}";
+            // Dahua accepts credentials in the URL like user:pass@host
+            return "http://{$user}:{$pass}@{$ip}/cgi-bin/snapshot.cgi?channel=1";
         case 'bcs':
             // Many BCS devices implement Hikvision's ISAPI
             return "http://{$user}:{$pass}@{$ip}/ISAPI/Streaming/channels/1/picture";
