@@ -1,13 +1,13 @@
 <?php
 function snapshot_url(array $cam): ?string {
     $ip = $cam['ip'];
-    $user = $cam['username'] ?? '';
-    $pass = $cam['password'] ?? '';
+    $user = rawurlencode($cam['username'] ?? '');
+    $pass = rawurlencode($cam['password'] ?? '');
     $manufacturer = strtolower($cam['manufacturer'] ?? '');
     switch ($manufacturer) {
         case 'hikvision':
-            // Hikvision uses the ISAPI endpoint with HTTP basic auth
-            return "http://{$user}:{$pass}@{$ip}/ISAPI/Streaming/channels/101/picture?snapshot=now";
+            // Hikvision snapshot endpoint
+            return "http://{$user}:{$pass}@{$ip}/ISAPI/Streaming/Channels/101/picture";
         case 'dahua':
             // Dahua accepts credentials in the URL like user:pass@host
             return "http://{$user}:{$pass}@{$ip}/cgi-bin/snapshot.cgi?channel=1";

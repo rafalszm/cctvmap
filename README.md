@@ -25,7 +25,9 @@ Each camera entry may contain the following fields:
 
 Snapshot and panel URLs are derived at runtime using the helper functions.
 
-Snapshot URLs are built automatically based on the camera vendor and embed credentials in the URL. For example:
+Snapshot URLs are built automatically based on the camera vendor and embed
+credentials in the URL (username and password are percent‑encoded to handle
+special characters). For example:
 
 - Hikvision: `http://user:pass@IP/ISAPI/Streaming/Channels/101/picture`
 - Dahua: `http://user:pass@IP/cgi-bin/snapshot.cgi?channel=1`
