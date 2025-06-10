@@ -37,4 +37,11 @@ Snapshot and panel URLs are derived at runtime using the helper functions.
    ```
 3. Open `http://localhost:8000/login.php` in your browser and log in using the sample credentials (`admin`/`admin`).
 
-The map will load cameras from `cameras.json` and display them on a Leaflet map with snapshots and links to the camera panels.
+## Features
+
+- Leaflet map showing cameras from `cameras.json`
+- Manual refresh of snapshots in the camera popups
+- Copy-to-clipboard buttons for IP, username and password (password can be shown/hidden)
+- Bootstrap theme toggle with the selected option stored in a cookie
+
+The map will load cameras from `cameras.json` and display them with custom markers and popups including the latest snapshot and a link to the camera panel.
