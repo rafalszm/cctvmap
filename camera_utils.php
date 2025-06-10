@@ -1,6 +1,8 @@
 <?php
 function slugify(string $text): string {
-    $text = iconv('UTF-8', 'ASCII//TRANSLIT', $text);
+    if (function_exists('iconv')) {
+        $text = iconv('UTF-8', 'ASCII//TRANSLIT', $text);
+    }
     $text = strtolower($text);
     $text = preg_replace('/[^a-z0-9]+/', '-', $text);
     $text = trim($text, '-');
