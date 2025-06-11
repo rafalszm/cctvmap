@@ -37,7 +37,8 @@ function addMarker(cam){
     marker=L.marker([cam.lat,cam.lng],{icon}).addTo(map);
   }
   marker.bindPopup(popupHtml(cam));
-  marker.on('popupopen',e=>addEvents(e.popup.getElement()));
+  marker.on('popupopen',e=>{addEvents(e.popup.getElement());highlightRow(cam.id);});
+  marker.on('popupclose',clearHighlight);
   markers[cam.id]=marker;
 }
 
@@ -180,12 +181,15 @@ function saveCam(e){
   };
   const existingId=document.getElementById('cam-id').value;
   cam.id=slugify(cam.name);
+  cam.snapshot='snapshot.php?id='+encodeURIComponent(cam.id);
+  cam.panel='http://'+cam.ip;
   fetch('camera_api.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:existingId?'update':'add',camera:JSON.stringify(cam),id:existingId})})
     .then(()=>{
       if(existingId){
         const idx=cameras.findIndex(c=>c.id===existingId);
         if(idx>=0){
           markers[existingId].remove();
+          delete markers[existingId];
           cameras[idx]=cam;
         }
       }else{
@@ -218,11 +222,22 @@ function openPopup(id){
   }
 }
 
+function highlightRow(id){
+  document.querySelectorAll('#camTable tbody tr').forEach(tr=>{
+    tr.classList.toggle('table-info', tr.dataset.id===id);
+  });
+}
+
+function clearHighlight(){
+  document.querySelectorAll('#camTable tbody tr.table-info').forEach(tr=>tr.classList.remove('table-info'));
+}
+
 function renderTable(){
   const tbody=document.querySelector('#camTable tbody');
   tbody.innerHTML='';
   cameras.forEach(cam=>{
     const tr=document.createElement('tr');
+    tr.dataset.id=cam.id;
     tr.innerHTML=`<td>${cam.name}</td><td>${cam.ip}</td><td>${cam.manufacturer||''}</td><td>
       <button class="btn btn-sm btn-outline-primary open-btn" data-id="${cam.id}">Show</button>
       <button class="btn btn-sm btn-outline-secondary edit-btn" data-id="${cam.id}">Edit</button>
