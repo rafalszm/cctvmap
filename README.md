@@ -51,5 +51,6 @@ Snapshots are fetched server-side. The helper functions build the vendor-specifi
 - Snapshots are served through `snapshot.php` to prevent browser cross-origin errors
 - Copy-to-clipboard buttons for IP, username and password (password can be shown/hidden)
 - Bootstrap theme toggle with the selected option stored in a cookie
+- **CSV import modal** that lets you map columns from a file, preview the records and merge them into `cameras.json` without creating duplicates
 
 The map will load cameras from `cameras.json` and display them with custom markers and popups including the latest snapshot and a link to the camera panel.
