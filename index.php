@@ -28,6 +28,7 @@ foreach ($cams as &$cam) {
   <span class="navbar-brand">CCTV Map</span>
   <div class="ms-auto d-flex gap-2">
     <button id="add-btn" class="btn btn-outline-success">Add Camera</button>
+    <button id="import-btn" class="btn btn-outline-primary">Import CSV</button>
     <button id="theme-toggle" class="btn btn-outline-secondary"><i id="theme-icon" class="fa-solid fa-moon"></i></button>
     <a class="btn btn-outline-danger" href="logout.php">Logout</a>
   </div>
@@ -114,8 +115,49 @@ foreach ($cams as &$cam) {
     </div>
   </div>
 </div>
+
+<!-- Import modal -->
+<div class="modal fade" id="importModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Import CSV</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <input type="file" id="csvFile" accept=".csv" class="form-control">
+        </div>
+        <div id="mapping" class="row g-2 d-none">
+          <div class="col-6 col-md-4"><label class="form-label">Name</label><select data-field="name" class="form-select"></select></div>
+          <div class="col-6 col-md-4"><label class="form-label">IP</label><select data-field="ip" class="form-select"></select></div>
+          <div class="col-6 col-md-4"><label class="form-label">Username</label><select data-field="username" class="form-select"></select></div>
+          <div class="col-6 col-md-4"><label class="form-label">Password</label><select data-field="password" class="form-select"></select></div>
+          <div class="col-6 col-md-4"><label class="form-label">Manufacturer</label><select data-field="manufacturer" class="form-select"></select></div>
+          <div class="col-6 col-md-4"><label class="form-label">Type</label><select data-field="type" class="form-select"></select></div>
+          <div class="col-6 col-md-4"><label class="form-label">MAC</label><select data-field="mac" class="form-select"></select></div>
+          <div class="col-6 col-md-4"><label class="form-label">Direction</label><select data-field="direction" class="form-select"></select></div>
+          <div class="col-6 col-md-4"><label class="form-label">Latitude</label><select data-field="lat" class="form-select"></select></div>
+          <div class="col-6 col-md-4"><label class="form-label">Longitude</label><select data-field="lng" class="form-select"></select></div>
+        </div>
+        <div id="previewSection" class="mt-3 d-none">
+          <table class="table table-sm">
+            <thead><tr><th>Name</th><th>IP</th><th>Manufacturer</th><th>Type</th></tr></thead>
+            <tbody id="previewBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" id="previewImport" class="btn btn-info">Preview</button>
+        <button type="button" id="confirmImport" class="btn btn-primary d-none">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
 <script id="cameras-data" type="application/json">
 <?php echo json_encode($cams, JSON_HEX_TAG|JSON_UNESCAPED_SLASHES); ?>
 </script>

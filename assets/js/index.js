@@ -11,6 +11,9 @@ let rotateLine;
 const camModal=new bootstrap.Modal(document.getElementById('camModal'));
 const delModal=new bootstrap.Modal(document.getElementById('delModal'));
 let delId='';
+const importModal=new bootstrap.Modal(document.getElementById('importModal'));
+let csvRows=[];
+let importList=[];
 
 function slugify(text){
   return text.toString().normalize('NFD').replace(/[^\w\s-]/g,'').replace(/[\u0300-\u036f]/g,'')
@@ -152,6 +155,86 @@ function openEdit(id){
 function confirmDelete(id){
   delId=id;
   delModal.show();
+}
+
+function openImport(){
+  resetImportModal();
+  importModal.show();
+}
+
+function resetImportModal(){
+  document.getElementById('csvFile').value='';
+  document.getElementById('mapping').classList.add('d-none');
+  document.getElementById('previewSection').classList.add('d-none');
+  document.getElementById('confirmImport').classList.add('d-none');
+  csvRows=[];
+  importList=[];
+}
+
+function handleCSVFile(e){
+  const file=e.target.files[0];
+  if(!file) return;
+  Papa.parse(file,{header:true,skipEmptyLines:true,complete:res=>{
+    csvRows=res.data;
+    const headers=res.meta.fields||[];
+    const selects=document.querySelectorAll('#mapping select');
+    selects.forEach(sel=>{
+      sel.innerHTML='<option value=""></option>'+headers.map(h=>`<option value="${h}">${h}</option>`).join('');
+    });
+    document.getElementById('mapping').classList.remove('d-none');
+  }});
+}
+
+function previewImport(){
+  if(!csvRows.length) return;
+  const map={};
+  document.querySelectorAll('#mapping select').forEach(sel=>{if(sel.value) map[sel.dataset.field]=sel.value;});
+  importList=csvRows.map(row=>({
+    name:row[map.name]||'',
+    ip:row[map.ip]||'',
+    username:row[map.username]||'',
+    password:row[map.password]||'',
+    manufacturer:row[map.manufacturer]||'',
+    type:row[map.type]||'',
+    mac:row[map.mac]||'',
+    direction:parseInt(row[map.direction]||0)||0,
+    lat:parseFloat(row[map.lat])||0,
+    lng:parseFloat(row[map.lng])||0
+  }));
+  const tbody=document.getElementById('previewBody');
+  tbody.innerHTML='';
+  importList.forEach(c=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${c.name}</td><td>${c.ip}</td><td>${c.manufacturer}</td><td>${c.type}</td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('previewSection').classList.remove('d-none');
+  document.getElementById('confirmImport').classList.remove('d-none');
+}
+
+function confirmImport(){
+  if(!importList.length) return;
+  const list=importList.map(c=>{
+    const id=slugify(c.name);
+    return {...c,id};
+  });
+  fetch('camera_api.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:'import',cameras:JSON.stringify(list)})})
+    .then(()=>{
+      list.forEach(cam=>{
+        cam.snapshot='snapshot.php?id='+encodeURIComponent(cam.id);
+        cam.panel='http://'+cam.ip;
+        const idx=cameras.findIndex(c=>c.id===cam.id);
+        if(idx>=0){
+          markers[cam.id].remove();
+          cameras[idx]=cam;
+        }else{
+          cameras.push(cam);
+        }
+        addMarker(cam);
+      });
+      renderTable();
+      importModal.hide();
+    });
 }
 
 function setupModalMap(cam){
@@ -354,8 +437,12 @@ document.addEventListener('DOMContentLoaded',()=>{
     th.addEventListener('click',()=>sortTable(th.dataset.key));
   });
   document.getElementById('add-btn').addEventListener('click',openAdd);
+  document.getElementById('import-btn').addEventListener('click',openImport);
   document.getElementById('camForm').addEventListener('submit',saveCam);
   document.getElementById('delConfirm').addEventListener('click',deleteCam);
+  document.getElementById('csvFile').addEventListener('change',handleCSVFile);
+  document.getElementById('previewImport').addEventListener('click',previewImport);
+  document.getElementById('confirmImport').addEventListener('click',confirmImport);
   document.getElementById('cam-type').addEventListener('change',()=>{updateMarkerIcon();placeRotateHandle();});
   document.getElementById('cam-dir').addEventListener('input',placeRotateHandle);
   updateSortIndicators();

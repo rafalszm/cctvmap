@@ -41,6 +41,25 @@ if ($action === 'add' || $action === 'update') {
     echo 'ok';
     exit;
 }
+if ($action === 'import') {
+    $list = json_decode($_POST['cameras'] ?? '', true);
+    if (!$list) { http_response_code(400); exit('Invalid data'); }
+    foreach ($list as $cam) {
+        $cam['lat'] = floatval($cam['lat'] ?? 0);
+        $cam['lng'] = floatval($cam['lng'] ?? 0);
+        $cam['direction'] = intval($cam['direction'] ?? 0);
+        $id = slugify($cam['name']);
+        $idx = find_index($cams, $id);
+        if ($idx >= 0) {
+            $cams[$idx] = $cam;
+        } else {
+            $cams[] = $cam;
+        }
+    }
+    save_cams($cams);
+    echo 'ok';
+    exit;
+}
 http_response_code(400);
 exit('Invalid action');
 ?>
