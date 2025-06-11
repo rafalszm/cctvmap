@@ -1,0 +1,11 @@
+#map{height:70vh;}
+.bullet-icon{
+  width:20px;
+  height:20px;
+  background-color:red;
+  mask:url('../img/camera-top-0.png') no-repeat center/contain;
+  -webkit-mask:url('../img/camera-top-0.png') no-repeat center/contain;
+}
+th.sortable{cursor:pointer;user-select:none;}
+th.sortable.asc::after{content:' \25B2';}
+th.sortable.desc::after{content:' \25BC';}
