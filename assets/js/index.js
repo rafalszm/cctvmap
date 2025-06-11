@@ -6,6 +6,8 @@ let overlays;
 const markers={};
 let modalMap;
 let dragMarker;
+let rotateHandle;
+let rotateLine;
 const camModal=new bootstrap.Modal(document.getElementById('camModal'));
 const delModal=new bootstrap.Modal(document.getElementById('delModal'));
 let delId='';
@@ -18,6 +20,21 @@ function slugify(text){
 function getCookieVal(name){
   const m=document.cookie.match('(^|;)\\s*'+name+'=([^;]+)');
   return m?decodeURIComponent(m.pop()):'';
+}
+
+function createIcon(type, dir){
+  type=(type||'').toLowerCase();
+  let html;
+  if(type==='ptz'){
+    html='<div class="ptz-icon"></div>';
+  }else if(type==='nvr'){
+    html='<div class="nvr-icon"></div>';
+  }else if(type==='radio'){
+    html='<div class="radio-icon"></div>';
+  }else{
+    html=`<div class="bullet-icon" style="transform:rotate(${dir||0}deg)"></div>`;
+  }
+  return L.divIcon({className:'',html,iconSize:[20,20],iconAnchor:[10,10]});
 }
 
 function initMap(){
@@ -42,13 +59,8 @@ function initMap(){
 }
 
 function addMarker(cam){
-  let marker;
-  if((cam.type||'').toLowerCase()==='ptz'){
-    marker=L.circleMarker([cam.lat,cam.lng],{radius:8,color:'#0d6efd',fillColor:'#0d6efd',fillOpacity:1}).addTo(map);
-  }else{
-    const icon=L.divIcon({className:'',html:`<div class="bullet-icon" style="transform:rotate(${cam.direction||0}deg)"></div>`,iconSize:[20,20],iconAnchor:[10,10]});
-    marker=L.marker([cam.lat,cam.lng],{icon}).addTo(map);
-  }
+  const icon=createIcon(cam.type, cam.direction);
+  const marker=L.marker([cam.lat,cam.lng],{icon}).addTo(map);
   marker.bindPopup(popupHtml(cam));
   marker.on('popupopen',e=>{addEvents(e.popup.getElement());highlightRow(cam.id);});
   marker.on('popupclose',clearHighlight);
@@ -161,7 +173,12 @@ function setupModalMap(cam){
       const p=dragMarker.getLatLng();
       document.getElementById('cam-lat').value=p.lat.toFixed(6);
       document.getElementById('cam-lng').value=p.lng.toFixed(6);
+      placeRotateHandle();
     });
+    rotateHandle=L.marker([0,0],{draggable:true,icon:L.divIcon({className:'rotate-handle',iconSize:[12,12],iconAnchor:[6,6]})}).addTo(modalMap);
+    rotateHandle.on('drag',updateDirFromHandle);
+    rotateHandle.on('dragend',updateDirFromHandle);
+    rotateLine=L.polyline([],{color:'#0d6efd',weight:1}).addTo(modalMap);
   }
   const lat=cam?.lat||0;
   const lng=cam?.lng||0;
@@ -169,6 +186,10 @@ function setupModalMap(cam){
   dragMarker.setLatLng([lat,lng]);
   document.getElementById('cam-lat').value=lat;
   document.getElementById('cam-lng').value=lng;
+  document.getElementById('cam-dir').value=cam?.direction||0;
+  document.getElementById('cam-type').value=cam?.type||'';
+  updateMarkerIcon();
+  placeRotateHandle();
   setTimeout(()=>modalMap.invalidateSize(),200);
 }
 
@@ -182,6 +203,38 @@ function fillForm(cam){
   document.getElementById('cam-type').value=cam.type||'';
   document.getElementById('cam-mac').value=cam.mac||'';
   document.getElementById('cam-dir').value=cam.direction||0;
+}
+
+function updateMarkerIcon(){
+  const type=document.getElementById('cam-type').value;
+  const dir=parseInt(document.getElementById('cam-dir').value)||0;
+  dragMarker.setIcon(createIcon(type,dir));
+}
+
+function placeRotateHandle(){
+  if(!rotateHandle) return;
+  const dir=parseInt(document.getElementById('cam-dir').value)||0;
+  const center=dragMarker.getLatLng();
+  const pt=modalMap.project(center);
+  const r=40;
+  const rad=dir*Math.PI/180;
+  const hp=L.point(pt.x + r*Math.sin(rad), pt.y - r*Math.cos(rad));
+  const latlng=modalMap.unproject(hp);
+  rotateHandle.setLatLng(latlng);
+  rotateLine.setLatLngs([center, latlng]);
+}
+
+function updateDirFromHandle(){
+  const center=dragMarker.getLatLng();
+  const cpt=modalMap.project(center);
+  const ppt=modalMap.project(rotateHandle.getLatLng());
+  const dx=ppt.x-cpt.x;
+  const dy=cpt.y-ppt.y;
+  let ang=Math.atan2(dx,dy)*180/Math.PI;
+  if(ang<0) ang+=360;
+  document.getElementById('cam-dir').value=Math.round(ang);
+  updateMarkerIcon();
+  placeRotateHandle();
 }
 
 function saveCam(e){
@@ -303,6 +356,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('add-btn').addEventListener('click',openAdd);
   document.getElementById('camForm').addEventListener('submit',saveCam);
   document.getElementById('delConfirm').addEventListener('click',deleteCam);
+  document.getElementById('cam-type').addEventListener('change',()=>{updateMarkerIcon();placeRotateHandle();});
+  document.getElementById('cam-dir').addEventListener('input',placeRotateHandle);
   updateSortIndicators();
   renderTable();
 });
