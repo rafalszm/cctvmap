@@ -34,7 +34,7 @@ foreach ($cams as &$cam) {
   </div>
 </nav>
 <div id="map"></div>
-<div class="container-fluid mt-3">
+<div id="tableContainer" class="container-fluid mt-3">
   <table id="camTable" class="table table-striped table-sm">
     <thead>
       <tr>
@@ -85,6 +85,7 @@ foreach ($cams as &$cam) {
               <div class="mb-3"><label class="form-label">Direction</label><input id="cam-dir" type="number" class="form-control" value="0"></div>
             </div>
             <div class="col-md-6">
+              <div class="mb-3"><img id="editPreview" class="img-fluid rounded w-100" alt="Preview"></div>
               <div id="editMap" style="height:300px" class="mb-3"></div>
               <div class="mb-3"><label class="form-label">Latitude</label><input id="cam-lat" class="form-control" required></div>
               <div class="mb-3"><label class="form-label">Longitude</label><input id="cam-lng" class="form-control" required></div>

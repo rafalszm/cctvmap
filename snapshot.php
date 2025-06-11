@@ -5,17 +5,27 @@ if (!isset($_SESSION['user'])) {
     exit('Forbidden');
 }
 require_once 'camera_utils.php';
-$cams = json_decode(file_get_contents('cameras.json'), true) ?? [];
-$id = $_GET['id'] ?? '';
-$cam = null;
-foreach ($cams as $c) {
-    if (slugify($c['name']) === $id) { $cam = $c; break; }
+if (isset($_GET['ip'])) {
+    $cam = [
+        'ip' => $_GET['ip'],
+        'manufacturer' => $_GET['manufacturer'] ?? '',
+        'username' => $_GET['username'] ?? '',
+        'password' => $_GET['password'] ?? '',
+    ];
+    $url = snapshot_url($cam);
+} else {
+    $cams = json_decode(file_get_contents('cameras.json'), true) ?? [];
+    $id = $_GET['id'] ?? '';
+    $cam = null;
+    foreach ($cams as $c) {
+        if (slugify($c['name']) === $id) { $cam = $c; break; }
+    }
+    if (!$cam) {
+        http_response_code(404);
+        exit('Camera not found');
+    }
+    $url = snapshot_url($cam);
 }
-if (!$cam) {
-    http_response_code(404);
-    exit('Camera not found');
-}
-$url = snapshot_url($cam);
 if (!$url) {
     http_response_code(500);
     exit('Unsupported camera');

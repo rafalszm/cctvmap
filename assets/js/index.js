@@ -14,6 +14,7 @@ let delId='';
 const importModal=new bootstrap.Modal(document.getElementById('importModal'));
 let csvRows=[];
 let importList=[];
+let previewTimer=null;
 
 function slugify(text){
   return text.toString().normalize('NFD').replace(/[^\w\s-]/g,'').replace(/[\u0300-\u036f]/g,'')
@@ -77,7 +78,10 @@ function popupHtml(cam){
     <img id="snap_${cam.id}" data-src="${cam.snapshot}" src="${cam.snapshot}" alt="${cam.name} snapshot" class="img-fluid rounded mb-2">
     <div class="d-flex justify-content-between mb-2">
       <button class="btn btn-sm btn-outline-secondary refresh" data-id="${cam.id}"><i class="fa-solid fa-arrows-rotate"></i></button>
-      <a href="${cam.panel}" target="_blank" class="btn btn-sm btn-outline-primary">Panel</a>
+      <div class="btn-group" role="group">
+        <a href="${cam.panel}" target="_blank" class="btn btn-sm btn-outline-primary">Panel</a>
+        <button class="btn btn-sm btn-outline-secondary edit-popup" data-id="${cam.id}">Edit</button>
+      </div>
     </div>
     <div class="mb-1">IP: <span id="ip_${cam.id}" class="me-1">${cam.ip}</span>
       <button class="btn btn-sm btn-link copy-btn p-0" data-target="ip_${cam.id}"><i class="fa-solid fa-copy"></i></button>
@@ -114,6 +118,7 @@ function addEvents(container){
       img.src=img.dataset.src+(img.dataset.src.includes('?')?'&':'?')+'t='+Date.now();
     });
   });
+  container.querySelectorAll('.edit-popup').forEach(btn=>btn.addEventListener('click',()=>openEdit(btn.dataset.id)));
   applyPopupTheme(container);
 }
 
@@ -141,6 +146,7 @@ function openAdd(){
   document.getElementById('camModalLabel').textContent='Add Camera';
   camModal.show();
   setupModalMap();
+  startPreview();
 }
 
 function openEdit(id){
@@ -150,6 +156,7 @@ function openEdit(id){
   document.getElementById('camModalLabel').textContent='Edit Camera';
   camModal.show();
   setupModalMap(cam);
+  startPreview();
 }
 
 function confirmDelete(id){
@@ -320,6 +327,28 @@ function updateDirFromHandle(){
   placeRotateHandle();
 }
 
+function updatePreview(){
+  const img=document.getElementById('editPreview');
+  if(!img) return;
+  const ip=document.getElementById('cam-ip').value;
+  const man=document.getElementById('cam-man').value;
+  const user=document.getElementById('cam-user').value;
+  const pass=document.getElementById('cam-pass').value;
+  if(!ip){img.removeAttribute('src');return;}
+  const params=new URLSearchParams({ip,manufacturer:man,username:user,password:pass});
+  img.src='snapshot.php?'+params.toString()+'&t='+Date.now();
+}
+
+function startPreview(){
+  stopPreview();
+  updatePreview();
+  previewTimer=setInterval(updatePreview,3000);
+}
+
+function stopPreview(){
+  if(previewTimer){clearInterval(previewTimer);previewTimer=null;}
+}
+
 function saveCam(e){
   e.preventDefault();
   const cam={
@@ -445,6 +474,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('confirmImport').addEventListener('click',confirmImport);
   document.getElementById('cam-type').addEventListener('change',()=>{updateMarkerIcon();placeRotateHandle();});
   document.getElementById('cam-dir').addEventListener('input',placeRotateHandle);
+  ['cam-ip','cam-man','cam-user','cam-pass'].forEach(id=>{
+    document.getElementById(id).addEventListener('input',updatePreview);
+  });
+  document.getElementById('camModal').addEventListener('hidden.bs.modal',stopPreview);
   updateSortIndicators();
   renderTable();
 });

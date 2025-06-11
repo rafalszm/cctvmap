@@ -37,3 +37,4 @@ th.sortable{cursor:pointer;user-select:none;}
 th.sortable.asc::after{content:' \25B2';}
 th.sortable.desc::after{content:' \25BC';}
 #editMap{height:300px;}
+#tableContainer{max-height:25vh;overflow-y:auto;}
