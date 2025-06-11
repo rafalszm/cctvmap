@@ -6,6 +6,7 @@ if (!isset($_SESSION['user'])) {
 }
 require_once 'camera_utils.php';
 $action = $_POST['action'] ?? '';
+$currentId = $_POST['id'] ?? '';
 $cams = json_decode(file_get_contents('cameras.json'), true) ?? [];
 function save_cams($list){
     file_put_contents('cameras.json', json_encode($list, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE));
@@ -30,9 +31,12 @@ if ($action === 'add' || $action === 'update') {
     $cam['lng'] = floatval($cam['lng']);
     $cam['direction'] = intval($cam['direction'] ?? 0);
     $id = slugify($cam['name']);
-    $idx = find_index($cams, $id);
-    if ($idx >= 0) { $cams[$idx] = $cam; }
-    else { $cams[] = $cam; }
+    $idx = $currentId ? find_index($cams, $currentId) : find_index($cams, $id);
+    if ($idx >= 0) {
+        $cams[$idx] = $cam;
+    } else {
+        $cams[] = $cam;
+    }
     save_cams($cams);
     echo 'ok';
     exit;

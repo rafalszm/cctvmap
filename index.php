@@ -5,6 +5,7 @@ if (!isset($_SESSION['user'])) {
     exit;
 }
 require_once 'camera_utils.php';
+$cfg = include 'config.php';
 $cams = json_decode(file_get_contents('cameras.json'), true) ?? [];
 foreach ($cams as &$cam) {
     $cam['id'] = slugify($cam['name']);
@@ -63,8 +64,22 @@ foreach ($cams as &$cam) {
               <div class="mb-3"><label class="form-label">IP</label><input id="cam-ip" class="form-control" required></div>
               <div class="mb-3"><label class="form-label">Username</label><input id="cam-user" class="form-control"></div>
               <div class="mb-3"><label class="form-label">Password</label><input id="cam-pass" class="form-control" type="password"></div>
-              <div class="mb-3"><label class="form-label">Manufacturer</label><input id="cam-man" class="form-control"></div>
-              <div class="mb-3"><label class="form-label">Type</label><input id="cam-type" class="form-control"></div>
+              <div class="mb-3"><label class="form-label">Manufacturer</label>
+                <select id="cam-man" class="form-select">
+                  <option value=""></option>
+                  <?php foreach ($cfg['manufacturers'] as $m): ?>
+                  <option value="<?php echo htmlspecialchars($m); ?>"><?php echo htmlspecialchars($m); ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+              <div class="mb-3"><label class="form-label">Type</label>
+                <select id="cam-type" class="form-select">
+                  <option value=""></option>
+                  <?php foreach ($cfg['types'] as $t): ?>
+                  <option value="<?php echo htmlspecialchars($t); ?>"><?php echo htmlspecialchars($t); ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
               <div class="mb-3"><label class="form-label">MAC</label><input id="cam-mac" class="form-control"></div>
               <div class="mb-3"><label class="form-label">Direction</label><input id="cam-dir" type="number" class="form-control" value="0"></div>
             </div>

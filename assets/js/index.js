@@ -180,7 +180,7 @@ function saveCam(e){
   };
   const existingId=document.getElementById('cam-id').value;
   cam.id=slugify(cam.name);
-  fetch('camera_api.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:existingId?'update':'add',camera:JSON.stringify(cam)})})
+  fetch('camera_api.php',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:existingId?'update':'add',camera:JSON.stringify(cam),id:existingId})})
     .then(()=>{
       if(existingId){
         const idx=cameras.findIndex(c=>c.id===existingId);
