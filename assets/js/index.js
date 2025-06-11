@@ -1,7 +1,8 @@
 const cameras = JSON.parse(document.getElementById('cameras-data').textContent);
 let map;
-let lightTiles;
-let darkTiles;
+let layerControl;
+let baseLayers;
+let overlays;
 const markers={};
 let modalMap;
 let dragMarker;
@@ -14,15 +15,27 @@ function slugify(text){
     .trim().toLowerCase().replace(/\s+/g,'-').replace(/-+/g,'-');
 }
 
+function getCookieVal(name){
+  const m=document.cookie.match('(^|;)\\s*'+name+'=([^;]+)');
+  return m?decodeURIComponent(m.pop()):'';
+}
+
 function initMap(){
-  map=L.map('map');
-  lightTiles=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    attribution:'Map data © OpenStreetMap contributors'
-  });
-  darkTiles=L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
-    attribution:'Map data © OpenStreetMap contributors'
-  });
-  setTiles(document.documentElement.getAttribute('data-bs-theme')||'light');
+  baseLayers={
+    'Jasny':L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap contributors'}),
+    'Ciemny':L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap contributors'}),
+    'Satelita':L.tileLayer.wms('https://mapy.geoportal.gov.pl/wss/service/PZGIK/ORTO/WMS/StandardResolution',{layers:'Raster',format:'image/jpeg',transparent:false,version:'1.1.1',attribution:'&copy; <a href="https://mapy.geoportal.gov.pl">Geoportal.gov.pl - GUGiK</a>'})
+  };
+  overlays={
+    'Adresy Ulice':L.tileLayer.wms('https://mapy.geoportal.gov.pl/wss/ext/KrajowaIntegracjaNumeracjiAdresowej?',{layers:'prg-adresy,prg-ulice,prg-place',format:'image/png',transparent:true,version:'1.1.1',attribution:'&copy; <a href="https://mapy.geoportal.gov.pl">Geoportal.gov.pl - GUGiK</a>'}),
+    'Lidar':L.tileLayer.wms('https://mapy.geoportal.gov.pl/wss/service/PZGIK/NMT/GRID1/WMS/ShadedRelief?',{layers:'Raster',format:'image/jpeg',transparent:false,version:'1.1.1',opacity:0.4,attribution:'&copy; <a href="https://mapy.geoportal.gov.pl">Geoportal.gov.pl - GUGiK</a>'}),
+    'Ewidencja Gruntów':L.tileLayer.wms('https://integracja.gugik.gov.pl/cgi-bin/KrajowaIntegracjaEwidencjiGruntow?',{layers:'powiaty,powiaty_obreby,zsin,obreby,dzialki,geoportal,numery_dzialek,budynki',format:'image/png',transparent:true,version:'1.3.0',attribution:'&copy; <a href="https://integracja.gugik.gov.pl">GUGiK</a>'})
+  };
+  const saved=getCookieVal('baseLayer');
+  const start=baseLayers[saved]||baseLayers['Jasny'];
+  map=L.map('map',{layers:[start]});
+  layerControl=L.control.layers(baseLayers,overlays).addTo(map);
+  map.on('baselayerchange',e=>{document.cookie='baseLayer='+encodeURIComponent(e.name)+';path=/';});
   const bounds=cameras.map(c=>[c.lat,c.lng]);
   if(bounds.length){map.fitBounds(bounds);}else{map.setView([0,0],1);}
   cameras.forEach(cam=>addMarker(cam));
@@ -42,9 +55,6 @@ function addMarker(cam){
   markers[cam.id]=marker;
 }
 
-function setTiles(t){
-  if(t==='dark'){map.removeLayer(lightTiles);darkTiles.addTo(map);}else{map.removeLayer(darkTiles);lightTiles.addTo(map);}
-}
 
 function popupHtml(cam){
   return `<div style="max-width:500px;">
@@ -107,8 +117,7 @@ function refreshOpenPopupTheme(){
   });
 }
 
-window.onThemeChange=function(t){
-  setTiles(t);
+window.onThemeChange=function(){
   refreshOpenPopupTheme();
 };
 
@@ -135,8 +144,18 @@ function confirmDelete(id){
 
 function setupModalMap(cam){
   if(!modalMap){
-    modalMap=L.map('editMap');
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'Map data © OpenStreetMap contributors'}).addTo(modalMap);
+    const bl={
+      'Jasny':L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap contributors'}),
+      'Ciemny':L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap contributors'}),
+      'Satelita':L.tileLayer.wms('https://mapy.geoportal.gov.pl/wss/service/PZGIK/ORTO/WMS/StandardResolution',{layers:'Raster',format:'image/jpeg',transparent:false,version:'1.1.1',attribution:'&copy; <a href="https://mapy.geoportal.gov.pl">Geoportal.gov.pl - GUGiK</a>'})
+    };
+    const ov={
+      'Adresy Ulice':L.tileLayer.wms('https://mapy.geoportal.gov.pl/wss/ext/KrajowaIntegracjaNumeracjiAdresowej?',{layers:'prg-adresy,prg-ulice,prg-place',format:'image/png',transparent:true,version:'1.1.1',attribution:'&copy; <a href="https://mapy.geoportal.gov.pl">Geoportal.gov.pl - GUGiK</a>'}),
+      'Lidar':L.tileLayer.wms('https://mapy.geoportal.gov.pl/wss/service/PZGIK/NMT/GRID1/WMS/ShadedRelief?',{layers:'Raster',format:'image/jpeg',transparent:false,version:'1.1.1',opacity:0.4,attribution:'&copy; <a href="https://mapy.geoportal.gov.pl">Geoportal.gov.pl - GUGiK</a>'}),
+      'Ewidencja Gruntów':L.tileLayer.wms('https://integracja.gugik.gov.pl/cgi-bin/KrajowaIntegracjaEwidencjiGruntow?',{layers:'powiaty,powiaty_obreby,zsin,obreby,dzialki,geoportal,numery_dzialek,budynki',format:'image/png',transparent:true,version:'1.3.0',attribution:'&copy; <a href="https://integracja.gugik.gov.pl">GUGiK</a>'})
+    };
+    modalMap=L.map('editMap',{layers:[bl['Jasny']]});
+    L.control.layers(bl,ov).addTo(modalMap);
     dragMarker=L.marker([0,0],{draggable:true}).addTo(modalMap);
     dragMarker.on('dragend',()=>{
       const p=dragMarker.getLatLng();
