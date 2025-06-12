@@ -6,6 +6,35 @@
   mask:url('../img/camera-top-0.png') no-repeat center/contain;
   -webkit-mask:url('../img/camera-top-0.png') no-repeat center/contain;
 }
+.ptz-icon{
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:#0d6efd;
+  opacity:0.8;
+}
+.nvr-icon{
+  width:20px;
+  height:14px;
+  background:#0d6efd;
+  border:2px solid #fff;
+}
+.radio-icon{
+  width:0;
+  height:0;
+  border-left:8px solid transparent;
+  border-right:8px solid transparent;
+  border-bottom:16px solid #0d6efd;
+}
+.rotate-handle{
+  width:12px;
+  height:12px;
+  border:2px solid #0d6efd;
+  background:#fff;
+  border-radius:50%;
+}
 th.sortable{cursor:pointer;user-select:none;}
 th.sortable.asc::after{content:' \25B2';}
 th.sortable.desc::after{content:' \25BC';}
+#editMap{height:300px;}
+#tableContainer{max-height:25vh;overflow-y:auto;}
